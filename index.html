@@ -228,7 +228,17 @@
       font-size:11px; font-weight:500; color:var(--muted2); text-transform:uppercase;
       letter-spacing:.07em; margin-bottom:12px;
     }
-    .cutrow { display:grid; grid-template-columns:1fr 90px; gap:10px; align-items:center; margin-bottom:9px; }
+    /* header row for cut/pay columns */
+    .cutrow-hdr {
+      display:grid; grid-template-columns:1fr 80px 80px; gap:8px;
+      margin-bottom:6px; padding:0 2px;
+    }
+    .cutrow-hdr span {
+      font-size:10px; text-transform:uppercase; letter-spacing:.06em;
+      color:var(--muted); text-align:center;
+    }
+    .cutrow-hdr span:first-child { text-align:left; }
+    .cutrow { display:grid; grid-template-columns:1fr 80px 80px; gap:8px; align-items:center; margin-bottom:9px; }
     .cutrow:last-child { margin-bottom:0; }
     .cutrow label { font-size:13px; color:var(--text); }
     .cutrow input {
@@ -237,6 +247,11 @@
       font-size:13px; text-align:center; outline:none; transition:border-color .2s; width:100%;
     }
     .cutrow input:focus { border-color:var(--accent); }
+    .cut-hint {
+      font-size:11px; color:var(--muted); line-height:1.5; margin-top:10px;
+      padding-top:10px; border-top:1px solid var(--border);
+    }
+    .cut-hint strong { color:var(--accent); }
 
     .mfooter { display:flex; gap:10px; justify-content:flex-end; margin-top:22px; }
     .btn { padding:9px 18px; border-radius:9px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; cursor:pointer; border:none; transition:all .15s; }
@@ -292,10 +307,31 @@
 
     <!-- Cut-off dates -->
     <div class="cutoffs-box">
-      <h4>Días de Corte por Tarjeta de Crédito</h4>
-      <div class="cutrow"><label>💳 Ficohsa</label>    <input type="number" id="cut-Ficohsa"    min="1" max="31" value="10"></div>
-      <div class="cutrow"><label>💳 BAC</label>         <input type="number" id="cut-BAC"        min="1" max="31" value="15"></div>
-      <div class="cutrow"><label>💳 Davivienda</label>  <input type="number" id="cut-Davivienda" min="1" max="31" value="20"></div>
+      <h4>Tarjetas de Crédito</h4>
+      <div class="cutrow-hdr">
+        <span>Banco</span>
+        <span>Día corte</span>
+        <span>Día pago</span>
+      </div>
+      <div class="cutrow">
+        <label>💳 Ficohsa</label>
+        <input type="number" id="cut-Ficohsa" min="1" max="31" value="10">
+        <input type="number" id="pay-Ficohsa" min="1" max="31" value="30">
+      </div>
+      <div class="cutrow">
+        <label>💳 BAC</label>
+        <input type="number" id="cut-BAC"     min="1" max="31" value="9">
+        <input type="number" id="pay-BAC"     min="1" max="31" value="31">
+      </div>
+      <div class="cutrow">
+        <label>💳 Davivienda</label>
+        <input type="number" id="cut-Davivienda" min="1" max="31" value="24">
+        <input type="number" id="pay-Davivienda" min="1" max="31" value="15">
+      </div>
+      <div class="cut-hint">
+        <strong>Día pago &gt; Día corte</strong> → paga en el mismo mes que cierra el ciclo (ej: BAC corte 9, pago 31 → paga en mayo).<br>
+        <strong>Día pago &lt; Día corte</strong> → paga el mes siguiente al cierre (ej: Davivienda corte 24, pago 15 → paga en junio).
+      </div>
     </div>
 
     <!-- Currency -->
@@ -363,13 +399,22 @@ const BANK_COLORS = { Ficohsa:'#00b06b', BAC:'#cc1010', Davivienda:'#e04010' };
 let cfg = {
   csvFile:  'gastos.csv',
   currency: 'L.',
-  cuts:     { Ficohsa:10, BAC:15, Davivienda:20 },
+  cuts:     { Ficohsa:10,  BAC:9,   Davivienda:24  },  // día de corte
+  pays:     { Ficohsa:30,  BAC:31,  Davivienda:15  },  // día máx. de pago
 };
 
 function loadCfg(){
   try {
     const s = localStorage.getItem('mis_gastos_cfg');
-    if(s) cfg = { ...cfg, ...JSON.parse(s) };
+    if(s){
+      const saved = JSON.parse(s);
+      cfg = {
+        csvFile:  saved.csvFile  || cfg.csvFile,
+        currency: saved.currency || cfg.currency,
+        cuts:     { ...cfg.cuts,  ...(saved.cuts  || {}) },
+        pays:     { ...cfg.pays,  ...(saved.pays  || {}) },
+      };
+    }
   } catch(e){}
 }
 function saveCfg(){ localStorage.setItem('mis_gastos_cfg', JSON.stringify(cfg)); }
@@ -390,8 +435,10 @@ function openModal(){
   document.getElementById('cfgFile').value = cfg.csvFile  || 'gastos.csv';
   document.getElementById('cfgCur').value  = cfg.currency || 'L.';
   ['Ficohsa','BAC','Davivienda'].forEach(b => {
-    const el = document.getElementById('cut-'+b);
-    if(el) el.value = cfg.cuts[b] ?? '';
+    const ec = document.getElementById('cut-'+b);
+    const ep = document.getElementById('pay-'+b);
+    if(ec) ec.value = cfg.cuts[b] ?? '';
+    if(ep) ep.value = cfg.pays[b] ?? '';
   });
   document.getElementById('modal').classList.remove('hidden');
 }
@@ -400,8 +447,10 @@ function saveConfig(){
   cfg.csvFile  = document.getElementById('cfgFile').value.trim() || 'gastos.csv';
   cfg.currency = document.getElementById('cfgCur').value.trim() || 'L.';
   ['Ficohsa','BAC','Davivienda'].forEach(b => {
-    const v = parseInt(document.getElementById('cut-'+b).value);
-    if(v >= 1 && v <= 31) cfg.cuts[b] = v;
+    const vc = parseInt(document.getElementById('cut-'+b).value);
+    const vp = parseInt(document.getElementById('pay-'+b).value);
+    if(vc >= 1 && vc <= 31) cfg.cuts[b] = vc;
+    if(vp >= 1 && vp <= 31) cfg.pays[b] = vp;
   });
   saveCfg();
   closeModal();
@@ -498,13 +547,17 @@ function parseDate(s){
 
 // ── BILLING LOGIC ───────────────────────
 //
-//  Regla: para tarjetas de crédito
-//    • si día(fecha) <= día de corte  → se cobra en el ciclo del MES ACTUAL
-//    • si día(fecha) > día de corte   → se cobra en el ciclo del MES SIGUIENTE
+//  Paso 1 – ¿A qué CICLO pertenece la transacción?
+//    • día(tx) <= día de corte  →  el ciclo cierra ESE MES
+//    • día(tx) >  día de corte  →  el ciclo cierra el MES SIGUIENTE
 //
-//  Ejemplo: corte Ficohsa el día 10.
-//   - Gasto el 5 de mayo  → se paga en mayo
-//   - Gasto el 31 de mayo → se paga en junio  ← el que pediste especialmente
+//  Paso 2 – ¿En qué MES se PAGA ese ciclo?
+//    • día de pago >  día de corte  →  se paga en el MISMO mes que cierra el ciclo
+//    • día de pago <= día de corte  →  se paga en el MES SIGUIENTE al cierre
+//
+//  Ejemplos configurados:
+//    BAC       corte 9 / pago 31:  gasto May 5  → ciclo cierra May 9  → pago 31 > 9  → paga en Mayo ✓
+//    Davivienda corte 24 / pago 15: gasto May 10 → ciclo cierra May 24 → pago 15 < 24 → paga en Junio ✓
 //
 function billingInfo(row){
   const d = row._date;
@@ -516,13 +569,22 @@ function billingInfo(row){
 
   const bank   = row['Banco'] || '';
   const cutDay = cfg.cuts[bank];
+  const payDay = cfg.pays[bank];
   if(!cutDay) return { real, billing:real, isCC:true };
 
-  let by=real.y, bm=real.m;
-  if(d.getDate() > cutDay){     // después del corte → siguiente mes
-    bm++; if(bm>11){ bm=0; by++; }
+  // Paso 1: mes en que cierra el ciclo
+  let cutY = real.y, cutM = real.m;
+  if(d.getDate() > cutDay){
+    cutM++; if(cutM > 11){ cutM = 0; cutY++; }
   }
-  return { real, billing:{y:by,m:bm}, isCC:true, cutDay };
+
+  // Paso 2: mes en que se paga (si no hay payDay, asumir mismo mes que el corte)
+  let payY = cutY, payM = cutM;
+  if(payDay && payDay <= cutDay){
+    payM++; if(payM > 11){ payM = 0; payY++; }
+  }
+
+  return { real, billing:{ y:payY, m:payM }, isCC:true, cutDay, payDay };
 }
 
 // ══════════════════════════════════════════
@@ -703,18 +765,34 @@ function creditCards(today){
     const col=BANK_COLORS[bank]||'var(--accent)';
     const pDateFmt=d=>`${d.getDate()} ${MONTHS[d.getMonth()].substring(0,3)}`;
 
+    // Calcular la fecha de pago de este ciclo
+    const payDay = cfg.pays[bank];
+    let payDue = '';
+    if(payDay){
+      // La fecha de pago: si payDay > cutDay → mismo mes que pEnd; si payDay <= cutDay → mes siguiente
+      const payMonth = (payDay <= cutDay)
+        ? new Date(pEnd.getFullYear(), pEnd.getMonth()+1, payDay)
+        : new Date(pEnd.getFullYear(), pEnd.getMonth(),   payDay);
+      payDue = `<div class="cc-footer" style="margin-top:4px">
+        Pago: <b style="color:var(--accent)">${pDateFmt(payMonth)}</b>
+        &nbsp;·&nbsp; vence en <b>${dNext}</b> días
+      </div>`;
+    } else {
+      payDue = `<div class="cc-footer"><b>${dNext}</b> días para el corte · ${pRows.length} mov.</div>`;
+    }
+
     return `<div class="cccard">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">
         <div class="cc-bank" style="color:${col}">${bank}</div>
-        <span style="font-size:10px;color:var(--muted)">Corte día ${cutDay}</span>
+        <span style="font-size:10px;color:var(--muted)">Corte día ${cutDay}${payDay?` · Pago día ${payDay}`:''}</span>
       </div>
       <div class="cc-period">${pDateFmt(pStart)} → ${pDateFmt(pEnd)}</div>
       <div class="cc-row">
-        <div class="cc-lbl">Consumo del período</div>
+        <div class="cc-lbl">Consumo del período (${pRows.length} mov.)</div>
         <div class="cc-val" style="color:${col}">${fmt(pTotal)}</div>
       </div>
       <div class="cc-prog"><div class="cc-progbar" style="width:${prog}%;background:${col}"></div></div>
-      <div class="cc-footer"><b>${dNext}</b> días para el corte · ${pRows.length} mov.</div>
+      ${payDue}
     </div>`;
   }).join('');
   return `<div>
