@@ -1,11 +1,75 @@
 Fecha,Concepto,Categoría,Subcategoría,Tipo Transacción,Banco,Monto
-2026-05-01,Supermercado La Colonia,Alimentación,Supermercado,Tarjeta de crédito,Ficohsa,850.00
-2026-05-03,Almuerzo en restaurante,Alimentación,Restaurantes,Tarjeta de crédito,BAC,320.00
-2026-05-05,Netflix,Entretenimiento,Streaming,Tarjeta de crédito,Ficohsa,180.00
-2026-05-10,Electricidad ENEE,Servicios Públicos,Electricidad,Transferencia,Ficohsa,1200.00
-2026-05-12,Gasolinera UNO,Transporte,Gasolina,Efectivo,,-780.00
-2026-05-15,Agua SANAA,Servicios Públicos,Agua,Transferencia,Davivienda,350.00
-2026-05-20,Cine con familia,Entretenimiento,Cine,Efectivo,,250.00
-2026-05-25,Farmacia Kielsa,Salud,Farmacia,Tarjeta de crédito,BAC,420.00
-2026-05-28,Internet Tigo,Servicios Públicos,Internet,Débito automático,BAC,599.00
-2026-05-31,Gasolina Shell,Transporte,Gasolina,Tarjeta de crédito,Ficohsa,1500.00
+2026-05-10,Supermercado Despensa Familiar,Alimentación,Supermercado,Tarjeta de crédito,BAC,272.96
+2026-05-10,Membresía Mensual BAC,Servicios Financieros,Membresías,Tarjeta de crédito,BAC,217.60
+2026-05-10,Boletos Rawayana,Entretenimiento,Conciertos,Tarjeta de crédito,BAC,2381.39
+2026-05-11,CABLE COLOR,Servicios Públicos,Cable,Tarjeta de crédito,BAC,515
+2026-05-11,Plan Celular,Servicios Públicos,Internet,Tarjeta de crédito,BAC,259.50
+2026-05-01,Agua SANAA,Servicios Públicos,Agua,Transferencia,BAC,"80,00"
+2026-05-11,Parqueo Equinox,Transporte,Parqueo,Tarjeta de crédito,BAC,30
+2026-05-13,Gasolinera Texaco FFAA,Transporte,Gasolina,Tarjeta de crédito,BAC,1647.70
+2026-05-14,Retiro Cajero Bac,Servicios Financieros,Deuda,Tarjeta de crédito,BAC,2000
+2026-05-15,ICloud,Personales,Suscripciones,Tarjeta de crédito,BAC,80
+2026-05-16,Walmart,Alimentación,Supermercado,Tarjeta de crédito,BAC,1263.82
+2026-05-16,Pricemart,Alimentación,Supermercado,Tarjeta de crédito,BAC,732.13
+2026-05-17,Apple Fitness,Personales,Suscripciones,Tarjeta de crédito,BAC,160
+2026-05-18,Netflix,Entretenimiento,Streaming,Tarjeta de crédito,BAC,268
+2026-05-19,Paiz Centro,Alimentación,Supermercado,Tarjeta de crédito,BAC,270.06
+2026-05-21,Gastos Varios,Servicios Financieros,Deuda,Tarjeta de crédito,BAC,1007.14
+2026-05-23,Temu,Personales,Ropa,Tarjeta de crédito,BAC,531.76
+2026-05-24,La Esquina,Entretenimiento,SalidasNocturnas,Transferencia,BAC,99.25
+2026-05-22,Parqueo Quinchon,Transporte,Parqueo,Efectivo,BAC,200
+2026-05-29,Parqueo Quinchon,Transporte,Parqueo,Efectivo,BAC,200
+2026-05-01,Pedidos Ya,Alimentación,Restaurantes,Tarjeta de crédito,Ficohsa,285
+2026-05-07,Uber Quinchon,Transporte,Uber,Tarjeta de crédito,Ficohsa,175.58
+2026-05-08,Cadena Saturno,Personales,Accesorios,Tarjeta de crédito,Ficohsa,230
+2026-05-08,Regalos día de las madres,Dar,Regalos,Tarjeta de crédito,Ficohsa,550
+2026-05-09,Pedidos Ya,Alimentación,Restaurantes,Tarjeta de crédito,Ficohsa,786
+2026-05-13,Pedidos Ya,Alimentación,Restaurantes,Tarjeta de crédito,Ficohsa,495
+2026-05-19,Uber Quinchon,Transporte,Uber,Tarjeta de crédito,Ficohsa,159.03
+2026-05-23,Pedidos Ya,Alimentación,Restaurantes,Tarjeta de crédito,Ficohsa,732
+2026-04-21,Farmavia Copán,Salud,Farmacia,Tarjeta de crédito,Davivienda,136
+2026-04-21,Buggys Plaza Celaque,Alimentación,Restaurantes,Tarjeta de crédito,Davivienda,923
+2026-04-22,Macaw Mountain,Entretenimiento,Viajes,Tarjeta de crédito,Davivienda,310
+2026-04-22,Cafe San Rafael,Alimentación,Cafés,Tarjeta de crédito,Davivienda,450
+2026-04-22,Mayan Harvest,Entretenimiento,Viajes,Tarjeta de crédito,Davivienda,625
+2026-04-23,Savoy Cafe,Alimentación,Cafés,Tarjeta de crédito,Davivienda,37
+2026-04-24,Mi Pasta,Alimentación,Restaurantes,Tarjeta de crédito,Davivienda,415
+2026-04-25,Dentista,Salud,Dentista,Tarjeta de crédito,Davivienda,800
+2026-04-25,Gasolinera Texaco Kuwait,Transporte,Gasolina,Tarjeta de crédito,Davivienda,500
+2026-04-25,Juana Laínez,Entretenimiento,SalidasDia,Tarjeta de crédito,Davivienda,45
+2026-04-27,Veterinario,Mascotas,Veterinario,Tarjeta de crédito,Davivienda,2037.50
+2026-04-27,Pricemart,Alimentación,Supermercado,Tarjeta de crédito,Davivienda,883.54
+2026-04-27,Walmart,Alimentación,Supermercado,Tarjeta de crédito,Davivienda,3277.58
+2026-04-28,Maquillaje,Personales,Maquillaje,Tarjeta de crédito,Davivienda,2100
+2026-04-28,Veterinario,Mascotas,Veterinario,Tarjeta de crédito,Davivienda,1280
+2026-04-28,Gasolinera Texaco FFAA,Transporte,Gasolina,Tarjeta de crédito,Davivienda,400
+2026-04-29,Espresso Americano,Alimentación,Cafés,Tarjeta de crédito,Davivienda,122.20
+2026-04-29,Chuck n Charlies,Alimentación,Restaurantes,Tarjeta de crédito,Davivienda,1455
+2026-04-29,Cinemark,Entretenimiento,Cine,Tarjeta de crédito,Davivienda,254
+2026-05-01,Pulpería,Alimentación,Supermercado,Tarjeta de crédito,Davivienda,289
+2026-05-02,Rendillantas,Transporte,Mantenimiento,Tarjeta de crédito,Davivienda,103
+2026-05-02,Rendillantas,Transporte,Mantenimiento,Tarjeta de crédito,Davivienda,1930
+2026-05-02,Arepa en Tegus,Alimentación,Restaurantes,Tarjeta de crédito,Davivienda,255
+2026-05-02,Gasolinera Texaco,Transporte,Gasolina,Tarjeta de crédito,Davivienda,1515.10
+2026-05-02,Stefys Design,Personales,Accesorios,Tarjeta de crédito,Davivienda,150
+2026-05-04,La Bodega,Salud,Vitaminas,Tarjeta de crédito,Davivienda,1103.37
+2026-05-04,Farmacia El Ahorro,Salud,Vitaminas,Tarjeta de crédito,Davivienda,1128
+2026-05-07,La Galeria,Transporte,Parqueo,Tarjeta de crédito,Davivienda,20
+2026-05-09,El Jardí - El Paraíso,Alimentación,Restaurantes,Tarjeta de crédito,Davivienda,898
+2026-05-09,Pricemart,Alimentación,Supermercado,Tarjeta de crédito,Davivienda,950
+2026-05-10,Gasolinera Texaco,Transporte,Gasolina,Tarjeta de crédito,Davivienda,500
+2026-05-11,Basilios,Alimentación,Restaurantes,Tarjeta de crédito,Davivienda,390.88
+2026-05-11,Basilios,Alimentación,Restaurantes,Tarjeta de crédito,Davivienda,129
+2026-05-11,Paiz Centro,Alimentación,Supermercado,Tarjeta de crédito,Davivienda,304.30
+2026-05-14,Paiz Centro,Alimentación,Supermercado,Tarjeta de crédito,Davivienda,139.14
+2026-05-22,Espresso Americano,Alimentación,Cafés,Tarjeta de crédito,Davivienda,460.06
+2026-05-24,Gasolinera Texaco Kuwait,Transporte,Gasolina,Tarjeta de crédito,Davivienda,1495.90
+2026-05-24,Dentista,Salud,Dentista,Tarjeta de crédito,Davivienda,800
+2026-05-24,Supermercado La Colonia,Alimentación,Supermercado,Tarjeta de crédito,Davivienda,189.88
+2026-05-26,NicoMarket,Alimentación,Supermercado,Tarjeta de crédito,Davivienda,71
+2026-05-28,Paiz Centro,Alimentación,Supermercado,Tarjeta de crédito,Davivienda,175.97
+2026-05-27,Espresso Americano,Alimentación,Cafés,Tarjeta de crédito,Davivienda,127.24
+2026-05-29,Keratina,Personales,Cabello,Tarjeta de crédito,Davivienda,1250
+2026-05-29,Coco Baleadas,Alimentación,Restaurantes,Tarjeta de crédito,Davivienda,80
+2026-05-29,Semitas,Alimentación,Restaurantes,Tarjeta de crédito,Davivienda,162
+2026-05-29,La Galeria,Transporte,Parqueo,Tarjeta de crédito,Davivienda,40
