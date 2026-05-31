@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis Gastos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #0c0e18;
+      --bg2: #131620;
+      --card: #1a1d2b;
+      --card2: #20243a;
+      --border: rgba(255,255,255,0.07);
+      --accent: #00d4a0;
+      --accent-dim: rgba(0,212,160,0.1);
+      --blue: #4f9eff;
+      --text: #e2e5f0;
+      --muted: #48506b;
+      --muted2: #828aaa;
+      --radius: 14px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--bg); color:var(--text); font-family:'DM Sans',system-ui,sans-serif; min-height:100vh; font-size:14px; }
+
+    /* ─── HEADER ─── */
+    .header {
+      background:var(--bg2); border-bottom:1px solid var(--border);
+      padding:14px 24px; display:flex; align-items:center;
+      justify-content:space-between; gap:12px; flex-wrap:wrap;
+      position:sticky; top:0; z-index:100;
+    }
+    .brand { display:flex; align-items:center; gap:10px; }
+    .brand-icon {
+      width:32px; height:32px; background:var(--accent); border-radius:8px;
+      display:flex; align-items:center; justify-content:center; font-size:15px; color:#0c0e18;
+    }
+    .brand h1 { font-family:'Fraunces',serif; font-size:18px; font-weight:400; }
+
+    .hcontrols { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+
+    .month-nav { display:flex; align-items:center; gap:6px; }
+    .month-nav button {
+      width:28px; height:28px; background:var(--card); border:1px solid var(--border);
+      color:var(--text); border-radius:8px; cursor:pointer; font-size:14px;
+      display:flex; align-items:center; justify-content:center; transition:background .15s;
+    }
+    .month-nav button:hover { background:var(--card2); }
+    #monthLabel {
+      font-family:'JetBrains Mono',monospace; font-size:13px;
+      min-width:120px; text-align:center; font-weight:500;
+    }
+
+    .view-toggle { display:flex; background:var(--card); border-radius:9px; padding:3px; gap:2px; }
+    .view-toggle button {
+      background:none; border:none; color:var(--muted2); padding:5px 13px;
+      border-radius:7px; cursor:pointer; font-size:12px; font-family:'DM Sans',sans-serif;
+      font-weight:500; transition:all .2s; white-space:nowrap;
+    }
+    .view-toggle button.active { background:var(--accent); color:#0c0e18; }
+
+    .icon-btn {
+      width:32px; height:32px; background:var(--card); border:1px solid var(--border);
+      color:var(--muted2); border-radius:8px; cursor:pointer; font-size:15px;
+      display:flex; align-items:center; justify-content:center; transition:all .15s;
+    }
+    .icon-btn:hover { background:var(--card2); color:var(--text); }
+
+    /* ─── MAIN ─── */
+    .main { padding:22px 24px; max-width:1380px; margin:0 auto; display:flex; flex-direction:column; gap:20px; }
+
+    /* ─── SUMMARY CARDS ─── */
+    .summary-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+    @media(max-width:900px){ .summary-grid{ grid-template-columns:repeat(2,1fr); } }
+    @media(max-width:500px){ .summary-grid{ grid-template-columns:1fr; } .main{ padding:14px; } }
+
+    .scard {
+      background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+      padding:18px 20px; position:relative; overflow:hidden; transition:border-color .2s;
+    }
+    .scard:hover { border-color:rgba(255,255,255,0.13); }
+    .scard::before {
+      content:''; position:absolute; top:0; left:0; right:0;
+      height:2px; border-radius:var(--radius) var(--radius) 0 0;
+    }
+    .scard.c-green::before  { background:var(--accent); }
+    .scard.c-blue::before   { background:var(--blue); }
+    .scard.c-orange::before { background:#ff8c42; }
+    .scard.c-purple::before { background:#a78bfa; }
+
+    .slabel { font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted2); font-weight:500; margin-bottom:8px; }
+    .samount { font-family:'JetBrains Mono',monospace; font-size:24px; font-weight:600; line-height:1; margin-bottom:5px; }
+    .ssub { font-size:11px; color:var(--muted); }
+    .sicon { position:absolute; top:14px; right:16px; font-size:20px; opacity:.2; }
+
+    /* ─── SECTION TITLE ─── */
+    .stitle {
+      font-size:11px; font-weight:500; color:var(--muted2);
+      text-transform:uppercase; letter-spacing:.07em; margin-bottom:14px;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .stitle span.mono { font-family:'JetBrains Mono',monospace; font-weight:600; color:var(--text); font-size:13px; text-transform:none; letter-spacing:0; }
+
+    /* ─── CHARTS ROW ─── */
+    .charts-row { display:grid; grid-template-columns:1fr 360px; gap:14px; }
+    @media(max-width:1100px){ .charts-row{ grid-template-columns:1fr; } }
+    .chart-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+    .chart-wrap { position:relative; width:100%; }
+
+    /* ─── CATEGORY BREAKDOWN ─── */
+    .catcard { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+    .cat-list { display:flex; flex-direction:column; gap:9px; }
+    .cat-row { display:flex; align-items:center; gap:10px; }
+    .cat-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+    .cat-name { flex:1.2; font-size:13px; }
+    .cat-barwrap { flex:2; height:3px; background:var(--border); border-radius:3px; overflow:hidden; }
+    .cat-bar { height:100%; border-radius:3px; transition:width .5s ease; }
+    .cat-amt { font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:500; min-width:88px; text-align:right; }
+    .cat-pct { font-size:11px; color:var(--muted); min-width:32px; text-align:right; }
+
+    /* ─── CREDIT CARDS ─── */
+    .cc-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+    @media(max-width:800px){ .cc-grid{ grid-template-columns:1fr; } }
+    .cccard {
+      background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+      padding:18px 20px; position:relative; overflow:hidden;
+    }
+    .cc-bank { font-family:'Fraunces',serif; font-size:17px; font-weight:400; margin-bottom:2px; }
+    .cc-period { font-size:11px; color:var(--muted2); margin-bottom:14px; }
+    .cc-row { margin-bottom:10px; }
+    .cc-lbl { font-size:10px; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin-bottom:3px; }
+    .cc-val { font-family:'JetBrains Mono',monospace; font-size:19px; font-weight:600; }
+    .cc-prog { height:2px; background:var(--border); border-radius:2px; overflow:hidden; margin-top:10px; }
+    .cc-progbar { height:100%; border-radius:2px; transition:width .6s ease; }
+    .cc-footer { font-size:11px; color:var(--muted2); margin-top:7px; }
+    .cc-footer b { font-family:'JetBrains Mono',monospace; font-weight:600; color:var(--accent); }
+
+    /* ─── WEEK GRID ─── */
+    .week-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
+    @media(max-width:600px){ .week-grid{ grid-template-columns:repeat(4,1fr); } }
+    .daycell {
+      background:var(--card2); border:1px solid var(--border); border-radius:10px;
+      padding:10px 6px; text-align:center;
+    }
+    .daycell.today { border-color:var(--accent); background:rgba(0,212,160,.07); }
+    .daycell .dname { font-size:9px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:3px; }
+    .daycell .dnum  { font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:600; margin-bottom:3px; }
+    .daycell.today .dnum { color:var(--accent); }
+    .daycell .damt  { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--accent); }
+
+    /* ─── TRANSACTIONS ─── */
+    .txcard { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+    .tx-table { width:100%; border-collapse:collapse; }
+    .tx-table th {
+      text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:.07em;
+      color:var(--muted); padding:7px 10px; font-weight:500; border-bottom:1px solid var(--border);
+    }
+    .tx-table td { padding:9px 10px; font-size:13px; border-bottom:1px solid var(--border); }
+    .tx-table tr:last-child td { border-bottom:none; }
+    .tx-table tr:hover td { background:rgba(255,255,255,.02); }
+    .badge { display:inline-flex; align-items:center; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:500; }
+    .tx-mono { font-family:'JetBrains Mono',monospace; font-size:11px; }
+    .tx-sub { font-size:11px; color:var(--muted2); }
+    .biling-tag { font-size:10px; color:var(--accent); margin-top:2px; }
+
+    /* ─── MODAL ─── */
+    .overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,.72); backdrop-filter:blur(10px);
+      z-index:200; display:flex; align-items:center; justify-content:center; padding:20px;
+    }
+    .overlay.hidden { display:none; }
+    .modal {
+      background:var(--bg2); border:1px solid rgba(255,255,255,.1);
+      border-radius:20px; padding:30px; width:100%; max-width:500px; max-height:92vh; overflow-y:auto;
+    }
+    .modal h2 { font-family:'Fraunces',serif; font-size:22px; font-weight:400; margin-bottom:6px; }
+    .modal .mdesc { font-size:13px; color:var(--muted2); line-height:1.6; margin-bottom:22px; }
+    .fgroup { margin-bottom:18px; }
+    .fgroup label {
+      display:block; font-size:11px; font-weight:500; color:var(--muted2);
+      text-transform:uppercase; letter-spacing:.06em; margin-bottom:7px;
+    }
+    .fgroup input[type=text], .fgroup input[type=number] {
+      width:100%; background:var(--card); border:1px solid var(--border);
+      border-radius:10px; padding:9px 13px; color:var(--text); font-family:'DM Sans',sans-serif;
+      font-size:13px; outline:none; transition:border-color .2s;
+    }
+    .fgroup input:focus { border-color:var(--accent); }
+
+    /* Steps banner */
+    .steps-box {
+      background:rgba(0,212,160,.05); border:1px solid rgba(0,212,160,.15);
+      border-radius:12px; padding:16px; margin-bottom:18px;
+    }
+    .steps-box h4 {
+      font-size:11px; font-weight:500; color:var(--accent); text-transform:uppercase;
+      letter-spacing:.07em; margin-bottom:10px;
+    }
+    .step { display:flex; align-items:flex-start; gap:10px; margin-bottom:8px; font-size:12px; color:var(--muted2); line-height:1.5; }
+    .step:last-child { margin-bottom:0; }
+    .step-num {
+      min-width:20px; height:20px; background:var(--accent); color:#0c0e18;
+      border-radius:50%; display:flex; align-items:center; justify-content:center;
+      font-size:10px; font-weight:700; flex-shrink:0;
+    }
+    .step strong { color:var(--text); }
+    .step code { background:var(--card2); padding:1px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--accent); }
+
+    /* Upload area */
+    .upload-area {
+      border:2px dashed var(--border); border-radius:12px; padding:16px;
+      text-align:center; cursor:pointer; transition:all .2s; margin-bottom:18px;
+    }
+    .upload-area:hover { border-color:var(--accent); background:var(--accent-dim); }
+    .upload-area .ua-icon { font-size:24px; margin-bottom:6px; }
+    .upload-area .ua-text { font-size:12px; color:var(--muted2); }
+    .upload-area .ua-text strong { color:var(--accent); }
+    .upload-area input[type=file] { display:none; }
+
+    .cutoffs-box {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:12px; padding:16px; margin-bottom:18px;
+    }
+    .cutoffs-box h4 {
+      font-size:11px; font-weight:500; color:var(--muted2); text-transform:uppercase;
+      letter-spacing:.07em; margin-bottom:12px;
+    }
+    .cutrow { display:grid; grid-template-columns:1fr 90px; gap:10px; align-items:center; margin-bottom:9px; }
+    .cutrow:last-child { margin-bottom:0; }
+    .cutrow label { font-size:13px; color:var(--text); }
+    .cutrow input {
+      background:var(--card2); border:1px solid var(--border); border-radius:8px;
+      padding:7px 10px; color:var(--text); font-family:'JetBrains Mono',monospace;
+      font-size:13px; text-align:center; outline:none; transition:border-color .2s; width:100%;
+    }
+    .cutrow input:focus { border-color:var(--accent); }
+
+    .mfooter { display:flex; gap:10px; justify-content:flex-end; margin-top:22px; }
+    .btn { padding:9px 18px; border-radius:9px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; cursor:pointer; border:none; transition:all .15s; }
+    .btn-primary { background:var(--accent); color:#0c0e18; }
+    .btn-primary:hover { opacity:.88; }
+    .btn-ghost { background:var(--card); color:var(--muted2); border:1px solid var(--border); }
+    .btn-ghost:hover { color:var(--text); }
+    .btn-upload { background:var(--card2); color:var(--text); border:1px solid rgba(0,212,160,.3); display:inline-flex; align-items:center; gap:8px; }
+    .btn-upload:hover { border-color:var(--accent); background:var(--accent-dim); }
+
+    /* ─── STATES ─── */
+    .state-mid { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:280px; gap:14px; text-align:center; color:var(--muted2); padding:20px; }
+    .state-mid h3 { font-family:'Fraunces',serif; font-size:20px; font-weight:400; color:var(--text); }
+    .state-mid p { font-size:13px; line-height:1.6; max-width:360px; }
+    .spinner { width:30px; height:30px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; }
+    @keyframes spin { to{ transform:rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════ CONFIG MODAL ═══════════════ -->
+<div class="overlay hidden" id="modal">
+  <div class="modal">
+    <h2>⚙️ Configuración</h2>
+    <p class="mdesc">Cómo subir tu CSV y configurar las tarjetas de crédito.</p>
+
+    <!-- Steps -->
+    <div class="steps-box">
+      <h4>📋 Cómo actualizar tus gastos</h4>
+      <div class="step"><div class="step-num">1</div><div>Edita tu hoja en <strong>Google Sheets</strong> o cualquier programa.</div></div>
+      <div class="step"><div class="step-num">2</div><div>Descárgala como <strong>CSV</strong> y renómbrala exactamente como el campo abajo (ej: <code>gastos.csv</code>).</div></div>
+      <div class="step"><div class="step-num">3</div><div>En GitHub ve a tu repo, clic en <strong>Add file → Upload files</strong>, sube el CSV y confirma el commit.</div></div>
+      <div class="step"><div class="step-num">4</div><div>Refresca esta página y listo — los datos se actualizan automáticamente.</div></div>
+    </div>
+
+    <!-- CSV filename -->
+    <div class="fgroup">
+      <label>Nombre del archivo CSV en el repositorio</label>
+      <input type="text" id="cfgFile" placeholder="gastos.csv" value="gastos.csv">
+    </div>
+
+    <!-- Local upload for testing -->
+    <div>
+      <label style="font-size:11px;font-weight:500;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:7px;">
+        Prueba local (sin subir a GitHub)
+      </label>
+      <label class="upload-area" for="localFile">
+        <div class="ua-icon">📂</div>
+        <div class="ua-text">Arrastra un CSV aquí o <strong>haz clic para seleccionar</strong></div>
+        <input type="file" id="localFile" accept=".csv" onchange="loadLocalCSV(event)">
+      </label>
+    </div>
+
+    <!-- Cut-off dates -->
+    <div class="cutoffs-box">
+      <h4>Días de Corte por Tarjeta de Crédito</h4>
+      <div class="cutrow"><label>💳 Ficohsa</label>    <input type="number" id="cut-Ficohsa"    min="1" max="31" value="10"></div>
+      <div class="cutrow"><label>💳 BAC</label>         <input type="number" id="cut-BAC"        min="1" max="31" value="15"></div>
+      <div class="cutrow"><label>💳 Davivienda</label>  <input type="number" id="cut-Davivienda" min="1" max="31" value="20"></div>
+    </div>
+
+    <!-- Currency -->
+    <div class="fgroup" style="margin-bottom:0">
+      <label>Moneda / Símbolo</label>
+      <input type="text" id="cfgCur" value="L." placeholder="L.">
+    </div>
+
+    <div class="mfooter">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveConfig()">Guardar y recargar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<header class="header">
+  <div class="brand">
+    <div class="brand-icon">₱</div>
+    <h1>Mis Gastos</h1>
+  </div>
+  <div class="hcontrols">
+    <div class="month-nav">
+      <button onclick="changeMonth(-1)">&#8249;</button>
+      <span id="monthLabel">—</span>
+      <button onclick="changeMonth(1)">&#8250;</button>
+    </div>
+    <div class="view-toggle">
+      <button id="vbtn-real"    class="active" onclick="setView('real')">📅 Real</button>
+      <button id="vbtn-billing"               onclick="setView('billing')">💳 Facturación</button>
+    </div>
+    <button class="icon-btn" onclick="loadData()" title="Actualizar datos">↻</button>
+    <button class="icon-btn" onclick="openModal()" title="Configuración">⚙</button>
+  </div>
+</header>
+
+<!-- ═══════════════ MAIN APP ═══════════════ -->
+<main class="main" id="app">
+  <div class="state-mid"><div class="spinner"></div><h3>Iniciando...</h3></div>
+</main>
+
+<script>
+// ══════════════════════════════════════════
+//  CONSTANTS
+// ══════════════════════════════════════════
+const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const DAYS   = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+
+const CATS = {
+  'Alimentación':       { hex:'#ff8040', bg:'rgba(255,128,64,.13)',  label:'Alimentación' },
+  'Transporte':         { hex:'#4fa0ff', bg:'rgba(79,160,255,.13)',  label:'Transporte' },
+  'Servicios Públicos': { hex:'#b56bff', bg:'rgba(181,107,255,.13)', label:'Servicios' },
+  'Salud':              { hex:'#26d4a0', bg:'rgba(38,212,160,.13)',  label:'Salud' },
+  'Entretenimiento':    { hex:'#f065b0', bg:'rgba(240,101,176,.13)', label:'Entretenimiento' },
+  'Otro':               { hex:'#7f8ea8', bg:'rgba(127,142,168,.13)', label:'Otro' },
+};
+function catStyle(cat){ return CATS[cat] || CATS['Otro']; }
+
+const BANK_COLORS = { Ficohsa:'#00b06b', BAC:'#cc1010', Davivienda:'#e04010' };
+
+// ══════════════════════════════════════════
+//  CONFIG  (persisted in localStorage)
+// ══════════════════════════════════════════
+let cfg = {
+  csvFile:  'gastos.csv',
+  currency: 'L.',
+  cuts:     { Ficohsa:10, BAC:15, Davivienda:20 },
+};
+
+function loadCfg(){
+  try {
+    const s = localStorage.getItem('mis_gastos_cfg');
+    if(s) cfg = { ...cfg, ...JSON.parse(s) };
+  } catch(e){}
+}
+function saveCfg(){ localStorage.setItem('mis_gastos_cfg', JSON.stringify(cfg)); }
+
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+let data     = [];
+let view     = 'real';   // 'real' | 'billing'
+let selYear  = new Date().getFullYear();
+let selMonth = new Date().getMonth();
+let charts$  = {};
+
+// ══════════════════════════════════════════
+//  MODAL
+// ══════════════════════════════════════════
+function openModal(){
+  document.getElementById('cfgFile').value = cfg.csvFile  || 'gastos.csv';
+  document.getElementById('cfgCur').value  = cfg.currency || 'L.';
+  ['Ficohsa','BAC','Davivienda'].forEach(b => {
+    const el = document.getElementById('cut-'+b);
+    if(el) el.value = cfg.cuts[b] ?? '';
+  });
+  document.getElementById('modal').classList.remove('hidden');
+}
+function closeModal(){ document.getElementById('modal').classList.add('hidden'); }
+function saveConfig(){
+  cfg.csvFile  = document.getElementById('cfgFile').value.trim() || 'gastos.csv';
+  cfg.currency = document.getElementById('cfgCur').value.trim() || 'L.';
+  ['Ficohsa','BAC','Davivienda'].forEach(b => {
+    const v = parseInt(document.getElementById('cut-'+b).value);
+    if(v >= 1 && v <= 31) cfg.cuts[b] = v;
+  });
+  saveCfg();
+  closeModal();
+  loadData();
+}
+
+// ══════════════════════════════════════════
+//  DATA LOADING
+// ══════════════════════════════════════════
+
+// Load from the repo (relative URL — works on GitHub Pages)
+async function loadData(){
+  showLoading();
+  const file = cfg.csvFile || 'gastos.csv';
+  try {
+    const res = await fetch('./' + file + '?_=' + Date.now());
+    if(!res.ok) throw new Error(
+      `No se encontró "${file}" (HTTP ${res.status}). ` +
+      `Sube el archivo al repositorio o usa la opción de carga local en ⚙.`
+    );
+    const csv = await res.text();
+    data = parseCSV(csv);
+    if(!data.length) throw new Error('El CSV no contiene datos válidos. Revisa el formato.');
+    render();
+  } catch(e){
+    if(e instanceof TypeError){
+      // Fetch failed (e.g. running index.html locally without a server)
+      showError(
+        'No se puede cargar el CSV directamente desde disco. ' +
+        'Abre ⚙ y usa la opción "Prueba local" para cargar el CSV desde tu computadora.'
+      );
+    } else {
+      showError(e.message);
+    }
+  }
+}
+
+// Load a local CSV file (for offline testing)
+function loadLocalCSV(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const parsed = parseCSV(e.target.result);
+      if(!parsed.length){ showError('El archivo CSV no contiene datos válidos.'); return; }
+      data = parsed;
+      closeModal();
+      render();
+    } catch(err){
+      showError('Error al leer el CSV: ' + err.message);
+    }
+  };
+  reader.onerror = () => showError('No se pudo leer el archivo.');
+  reader.readAsText(file, 'UTF-8');
+}
+
+// ── CSV PARSER ──────────────────────────
+function parseCSV(csv){
+  const lines = csv.split(/\r?\n/).map(l=>l.trim()).filter(l=>l.length);
+  if(lines.length < 2) return [];
+  const hdrs = splitLine(lines[0]).map(h=>h.replace(/^"|"$/g,'').trim());
+  return lines.slice(1).map(l=>{
+    const vals = splitLine(l).map(v=>v.replace(/^"|"$/g,'').trim());
+    const row  = {};
+    hdrs.forEach((h,i) => row[h] = vals[i] ?? '');
+    row._date   = parseDate(row['Fecha'] || '');
+    row._amount = parseFloat((row['Monto']||'0').replace(',','.')) || 0;
+    row._bill   = billingInfo(row);
+    return row;
+  }).filter(r => r._date !== null);
+}
+
+function splitLine(line){
+  const res=[]; let cur='', inQ=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){ inQ=!inQ; }
+    else if(c===','&&!inQ){ res.push(cur); cur=''; }
+    else cur+=c;
+  }
+  res.push(cur); return res;
+}
+
+function parseDate(s){
+  if(!s) return null;
+  let d;
+  if(/^\d{4}-\d{2}-\d{2}/.test(s))        d = new Date(s+'T00:00:00');
+  else if(/^\d{2}\/\d{2}\/\d{4}/.test(s)) { const [dd,mm,yy]=s.split('/'); d=new Date(`${yy}-${mm}-${dd}T00:00:00`); }
+  else if(/^\d{2}\/\d{2}\/\d{2}$/.test(s)) { const [dd,mm,yy]=s.split('/'); d=new Date(`20${yy}-${mm}-${dd}T00:00:00`); }
+  else d = new Date(s);
+  return isNaN(d) ? null : d;
+}
+
+// ── BILLING LOGIC ───────────────────────
+//
+//  Regla: para tarjetas de crédito
+//    • si día(fecha) <= día de corte  → se cobra en el ciclo del MES ACTUAL
+//    • si día(fecha) > día de corte   → se cobra en el ciclo del MES SIGUIENTE
+//
+//  Ejemplo: corte Ficohsa el día 10.
+//   - Gasto el 5 de mayo  → se paga en mayo
+//   - Gasto el 31 de mayo → se paga en junio  ← el que pediste especialmente
+//
+function billingInfo(row){
+  const d = row._date;
+  if(!d) return null;
+  const real = { y:d.getFullYear(), m:d.getMonth() };
+  const isCc = (row['Tipo Transacción']||'').toLowerCase().includes('crédito') ||
+               (row['Tipo Transacción']||'').toLowerCase().includes('credito');
+  if(!isCc) return { real, billing:real, isCC:false };
+
+  const bank   = row['Banco'] || '';
+  const cutDay = cfg.cuts[bank];
+  if(!cutDay) return { real, billing:real, isCC:true };
+
+  let by=real.y, bm=real.m;
+  if(d.getDate() > cutDay){     // después del corte → siguiente mes
+    bm++; if(bm>11){ bm=0; by++; }
+  }
+  return { real, billing:{y:by,m:bm}, isCC:true, cutDay };
+}
+
+// ══════════════════════════════════════════
+//  FILTERING HELPERS
+// ══════════════════════════════════════════
+function monthRows(y,m,v='real'){
+  return data.filter(r=>{
+    if(!r._bill) return false;
+    const key = v==='billing' ? r._bill.billing : r._bill.real;
+    return key.y===y && key.m===m;
+  });
+}
+function sum(rows){ return rows.reduce((a,r)=>a+Math.abs(r._amount),0); }
+function fmt(n){ return cfg.currency+' '+Math.abs(n).toLocaleString('es-HN',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+// ══════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════
+function changeMonth(d){
+  selMonth+=d;
+  if(selMonth<0){ selMonth=11; selYear--; }
+  if(selMonth>11){ selMonth=0; selYear++; }
+  render();
+}
+function setView(v){
+  view=v;
+  document.getElementById('vbtn-real').classList.toggle('active',v==='real');
+  document.getElementById('vbtn-billing').classList.toggle('active',v==='billing');
+  render();
+}
+function updateLabel(){ document.getElementById('monthLabel').textContent=MONTHS[selMonth]+' '+selYear; }
+
+// ══════════════════════════════════════════
+//  RENDER STATES
+// ══════════════════════════════════════════
+function showLoading(){
+  document.getElementById('app').innerHTML=
+    `<div class="state-mid"><div class="spinner"></div><h3>Cargando gastos...</h3><p>Leyendo ${cfg.csvFile||'gastos.csv'} desde el repositorio.</p></div>`;
+}
+function showError(m){
+  document.getElementById('app').innerHTML=
+    `<div class="state-mid">
+       <div style="font-size:36px">⚠️</div>
+       <h3>Error al cargar</h3>
+       <p>${m}</p>
+       <div style="display:flex;gap:10px;margin-top:8px">
+         <button class="btn btn-ghost" onclick="loadData()">Reintentar</button>
+         <button class="btn btn-primary" onclick="openModal()">⚙ Configuración</button>
+       </div>
+     </div>`;
+}
+
+// ══════════════════════════════════════════
+//  MAIN RENDER
+// ══════════════════════════════════════════
+function render(){
+  updateLabel();
+  const today    = new Date();
+  const todayRows= data.filter(r=>r._date&&sameDay(r._date,today));
+  const weekRows = data.filter(r=>r._date&&r._date>=weekStart(today));
+  const mReal    = monthRows(selYear,selMonth,'real');
+  const mBill    = monthRows(selYear,selMonth,'billing');
+  const mCur     = monthRows(selYear,selMonth,view);
+  const isCurMon = selYear===today.getFullYear()&&selMonth===today.getMonth();
+
+  document.getElementById('app').innerHTML =
+    summaryCards(todayRows,weekRows,mReal,mBill,today) +
+    chartsRow() +
+    catBreakdown(mCur) +
+    creditCards(today) +
+    (isCurMon ? weekView(today) : '') +
+    txTable(mCur);
+
+  requestAnimationFrame(()=>{
+    buildMonthlyChart();
+    buildCatChart(mCur);
+  });
+}
+
+// ── HELPERS ─────────────────────────────
+function sameDay(a,b){ return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); }
+function weekStart(d){ const s=new Date(d); s.setDate(d.getDate()-d.getDay()); s.setHours(0,0,0,0); return s; }
+
+// ── SUMMARY CARDS ───────────────────────
+function summaryCards(todayR,weekR,mReal,mBill,today){
+  const cards=[
+    { cls:'c-green',  icon:'📅', lbl:`Hoy · ${today.getDate()} ${MONTHS[today.getMonth()].substring(0,3)}`,  amt:sum(todayR), sub:`${todayR.length} transacciones` },
+    { cls:'c-blue',   icon:'🗓', lbl:'Esta Semana',                                                            amt:sum(weekR),  sub:`${weekR.length} transacciones` },
+    { cls:'c-orange', icon:'📆', lbl:`Mes Real · ${MONTHS[selMonth].substring(0,3)} ${selYear}`,              amt:sum(mReal),  sub:`${mReal.length} movimientos` },
+    { cls:'c-purple', icon:'💳', lbl:`Facturación · ${MONTHS[selMonth].substring(0,3)} ${selYear}`,           amt:sum(mBill),  sub:`Lo que pagarás en ${MONTHS[selMonth].substring(0,3)}` },
+  ];
+  return `<div class="summary-grid">${cards.map(c=>`
+    <div class="scard ${c.cls}">
+      <span class="sicon">${c.icon}</span>
+      <div class="slabel">${c.lbl}</div>
+      <div class="samount">${fmt(c.amt)}</div>
+      <div class="ssub">${c.sub}</div>
+    </div>`).join('')}</div>`;
+}
+
+// ── CHARTS ROW ──────────────────────────
+function chartsRow(){
+  return `
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="stitle">Gastos Mensuales — Vista ${view==='real'?'Real':'Facturación'}</div>
+      <div class="chart-wrap" style="height:250px"><canvas id="chMonthly"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="stitle">Categorías · ${MONTHS[selMonth]}</div>
+      <div class="chart-wrap" style="height:250px;display:flex;align-items:center;justify-content:center">
+        <canvas id="chCat" style="max-width:230px;max-height:230px"></canvas>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── CATEGORY BREAKDOWN ──────────────────
+function catBreakdown(rows){
+  const map={};
+  rows.forEach(r=>{ const c=r['Categoría']||'Otro'; map[c]=(map[c]||0)+Math.abs(r._amount); });
+  const total=Object.values(map).reduce((a,b)=>a+b,0);
+  if(!total) return '';
+  const items=Object.entries(map).sort((a,b)=>b[1]-a[1]).map(([cat,amt])=>{
+    const s=catStyle(cat); const pct=total>0?(amt/total*100):0;
+    return `<div class="cat-row">
+      <div class="cat-dot" style="background:${s.hex}"></div>
+      <div class="cat-name">${cat}</div>
+      <div class="cat-barwrap"><div class="cat-bar" style="width:${pct.toFixed(1)}%;background:${s.hex}"></div></div>
+      <div class="cat-amt" style="color:${s.hex}">${fmt(amt)}</div>
+      <div class="cat-pct">${pct.toFixed(0)}%</div>
+    </div>`;
+  }).join('');
+  return `<div class="catcard">
+    <div class="stitle"><span>Desglose por Categoría</span><span class="mono">${fmt(total)}</span></div>
+    <div class="cat-list">${items}</div>
+  </div>`;
+}
+
+// ── CREDIT CARDS ────────────────────────
+function creditCards(today){
+  const todayDay=today.getDate();
+  const cards=['Ficohsa','BAC','Davivienda'].map(bank=>{
+    const cutDay=cfg.cuts[bank];
+    if(!cutDay) return '';
+
+    // Período de facturación actual
+    let pStart,pEnd;
+    if(todayDay<=cutDay){
+      pEnd   = new Date(today.getFullYear(),today.getMonth(),cutDay);
+      pStart = new Date(today.getFullYear(),today.getMonth()-1,cutDay+1);
+    } else {
+      pStart = new Date(today.getFullYear(),today.getMonth(),cutDay+1);
+      pEnd   = new Date(today.getFullYear(),today.getMonth()+1,cutDay);
+    }
+
+    const pRows=data.filter(r=>{
+      if(!r._date||r['Banco']!==bank) return false;
+      const isCc=(r['Tipo Transacción']||'').toLowerCase().includes('crédito')||(r['Tipo Transacción']||'').toLowerCase().includes('credito');
+      return isCc && r._date>=pStart && r._date<=pEnd;
+    });
+    const pTotal=sum(pRows);
+
+    // Días para el próximo corte
+    let dNext;
+    if(todayDay<=cutDay){
+      dNext=cutDay-todayDay;
+    } else {
+      const nc=new Date(today.getFullYear(),today.getMonth()+1,cutDay);
+      dNext=Math.ceil((nc-today)/(86400000));
+    }
+
+    // Progreso del período
+    const pLen=Math.max(1,Math.ceil((pEnd-pStart)/86400000)+1);
+    const pElap=Math.max(0,Math.ceil((today-pStart)/86400000));
+    const prog=Math.min(100,pElap/pLen*100).toFixed(1);
+
+    const col=BANK_COLORS[bank]||'var(--accent)';
+    const pDateFmt=d=>`${d.getDate()} ${MONTHS[d.getMonth()].substring(0,3)}`;
+
+    return `<div class="cccard">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">
+        <div class="cc-bank" style="color:${col}">${bank}</div>
+        <span style="font-size:10px;color:var(--muted)">Corte día ${cutDay}</span>
+      </div>
+      <div class="cc-period">${pDateFmt(pStart)} → ${pDateFmt(pEnd)}</div>
+      <div class="cc-row">
+        <div class="cc-lbl">Consumo del período</div>
+        <div class="cc-val" style="color:${col}">${fmt(pTotal)}</div>
+      </div>
+      <div class="cc-prog"><div class="cc-progbar" style="width:${prog}%;background:${col}"></div></div>
+      <div class="cc-footer"><b>${dNext}</b> días para el corte · ${pRows.length} mov.</div>
+    </div>`;
+  }).join('');
+  return `<div>
+    <div class="stitle" style="margin-bottom:10px;padding:0 2px">Estado de Tarjetas de Crédito</div>
+    <div class="cc-grid">${cards}</div>
+  </div>`;
+}
+
+// ── WEEKLY VIEW ─────────────────────────
+function weekView(today){
+  const ws=weekStart(today);
+  const cells=Array.from({length:7},(_,i)=>{
+    const d=new Date(ws); d.setDate(ws.getDate()+i);
+    const rows=data.filter(r=>r._date&&sameDay(r._date,d));
+    const amt=sum(rows);
+    const isTod=sameDay(d,today);
+    return `<div class="daycell ${isTod?'today':''}">
+      <div class="dname">${DAYS[d.getDay()]}</div>
+      <div class="dnum">${d.getDate()}</div>
+      <div class="damt">${amt>0?fmt(amt):'—'}</div>
+    </div>`;
+  }).join('');
+  return `<div class="catcard">
+    <div class="stitle">Esta Semana</div>
+    <div class="week-grid">${cells}</div>
+  </div>`;
+}
+
+// ── TRANSACTION TABLE ────────────────────
+function txTable(rows){
+  const sorted=[...rows].sort((a,b)=>b._date-a._date).slice(0,60);
+  if(!sorted.length) return `<div class="txcard">
+    <div class="stitle">Transacciones</div>
+    <div class="state-mid" style="min-height:100px"><p>Sin transacciones para este período.</p></div>
+  </div>`;
+
+  const trs=sorted.map(r=>{
+    const s=catStyle(r['Categoría']||'');
+    const bi=r._bill;
+    const diffBill=bi&&bi.isCC&&(bi.billing.y!==bi.real.y||bi.billing.m!==bi.real.m);
+    // Show the billing-month tag when the transaction date and billing month differ
+    const tag=diffBill
+      ? `<div class="biling-tag">↪ Factura ${MONTHS[bi.billing.m].substring(0,3)} ${bi.billing.y}</div>`
+      : '';
+    const dd=r._date;
+    return `<tr>
+      <td><span class="tx-mono">${String(dd.getDate()).padStart(2,'0')} ${MONTHS[dd.getMonth()].substring(0,3)}</span></td>
+      <td>
+        <div>${r['Concepto']||'—'}</div>
+        <div class="tx-sub">${r['Subcategoría']||''}</div>
+        ${tag}
+      </td>
+      <td><span class="badge" style="background:${s.bg};color:${s.hex}">${r['Categoría']||'Otro'}</span></td>
+      <td>
+        <div class="tx-sub">${r['Tipo Transacción']||''}</div>
+        <div class="tx-sub">${r['Banco']||''}</div>
+      </td>
+      <td style="text-align:right"><span class="tx-mono" style="color:${s.hex};font-weight:600">${fmt(r._amount)}</span></td>
+    </tr>`;
+  }).join('');
+
+  return `<div class="txcard">
+    <div class="stitle"><span>Transacciones · ${MONTHS[selMonth]} ${selYear}</span><span class="mono">${sorted.length} mostradas</span></div>
+    <div style="overflow-x:auto">
+      <table class="tx-table">
+        <thead><tr>
+          <th>Fecha</th><th>Concepto</th><th>Categoría</th><th>Tipo / Banco</th><th style="text-align:right">Monto</th>
+        </tr></thead>
+        <tbody>${trs}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════
+//  CHARTS
+// ══════════════════════════════════════════
+function buildMonthlyChart(){
+  const canvas=document.getElementById('chMonthly');
+  if(!canvas) return;
+  if(charts$.monthly){ charts$.monthly.destroy(); }
+
+  const labels=[];
+  const allCats=Object.keys(CATS);
+  const dsMap={}; allCats.forEach(c=>dsMap[c]=[]);
+
+  for(let i=5;i>=0;i--){
+    let y=selYear,m=selMonth-i;
+    if(m<0){ m+=12; y--; }
+    labels.push(MONTHS[m].substring(0,3)+(i===0?` '${String(y).slice(-2)}`:''));
+    const rows=monthRows(y,m,view);
+    const byc={};
+    rows.forEach(r=>{ const c=r['Categoría']||'Otro'; byc[c]=(byc[c]||0)+Math.abs(r._amount); });
+    allCats.forEach(c=>dsMap[c].push(byc[c]||0));
+  }
+
+  const datasets=allCats.map(c=>({
+    label:CATS[c].label,
+    data:dsMap[c],
+    backgroundColor:CATS[c].hex,
+    borderRadius:3,
+    borderSkipped:false,
+  }));
+
+  charts$.monthly=new Chart(canvas,{
+    type:'bar',
+    data:{ labels, datasets },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{ display:false },
+        tooltip:{
+          callbacks:{ label:ctx=>` ${ctx.dataset.label}: ${fmt(ctx.parsed.y)}` }
+        }
+      },
+      scales:{
+        x:{ stacked:true, grid:{color:'rgba(255,255,255,.04)'}, ticks:{color:'#48506b',font:{family:'JetBrains Mono',size:11}}, border:{color:'transparent'} },
+        y:{ stacked:true, grid:{color:'rgba(255,255,255,.04)'}, ticks:{color:'#48506b',font:{family:'JetBrains Mono',size:11}, callback:v=>cfg.currency+(v>=1000?(v/1000).toFixed(0)+'k':v.toFixed(0))}, border:{color:'transparent'} }
+      }
+    }
+  });
+}
+
+function buildCatChart(rows){
+  const canvas=document.getElementById('chCat');
+  if(!canvas) return;
+  if(charts$.cat){ charts$.cat.destroy(); }
+  const map={};
+  rows.forEach(r=>{ const c=r['Categoría']||'Otro'; map[c]=(map[c]||0)+Math.abs(r._amount); });
+  if(!Object.keys(map).length) return;
+  const lbls=Object.keys(map), vals=Object.values(map), cols=lbls.map(l=>catStyle(l).hex);
+  charts$.cat=new Chart(canvas,{
+    type:'doughnut',
+    data:{ labels:lbls, datasets:[{ data:vals, backgroundColor:cols, borderWidth:2, borderColor:'#1a1d2b', hoverBorderWidth:0 }] },
+    options:{
+      responsive:true, maintainAspectRatio:true, cutout:'66%',
+      plugins:{
+        legend:{ display:false },
+        tooltip:{ callbacks:{ label:ctx=>` ${ctx.label}: ${fmt(ctx.parsed)}` } }
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+loadCfg();
+updateLabel();
+document.getElementById('modal').classList.add('hidden');
+loadData();   // Carga siempre al abrir — no requiere configuración previa
+</script>
+</body>
+</html>

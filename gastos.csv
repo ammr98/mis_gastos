@@ -1,0 +1,11 @@
+Fecha,Concepto,Categoría,Subcategoría,Tipo Transacción,Banco,Monto
+2026-05-01,Supermercado La Colonia,Alimentación,Supermercado,Tarjeta de crédito,Ficohsa,850.00
+2026-05-03,Almuerzo en restaurante,Alimentación,Restaurantes,Tarjeta de crédito,BAC,320.00
+2026-05-05,Netflix,Entretenimiento,Streaming,Tarjeta de crédito,Ficohsa,180.00
+2026-05-10,Electricidad ENEE,Servicios Públicos,Electricidad,Transferencia,Ficohsa,1200.00
+2026-05-12,Gasolinera UNO,Transporte,Gasolina,Efectivo,,-780.00
+2026-05-15,Agua SANAA,Servicios Públicos,Agua,Transferencia,Davivienda,350.00
+2026-05-20,Cine con familia,Entretenimiento,Cine,Efectivo,,250.00
+2026-05-25,Farmacia Kielsa,Salud,Farmacia,Tarjeta de crédito,BAC,420.00
+2026-05-28,Internet Tigo,Servicios Públicos,Internet,Débito automático,BAC,599.00
+2026-05-31,Gasolina Shell,Transporte,Gasolina,Tarjeta de crédito,Ficohsa,1500.00
